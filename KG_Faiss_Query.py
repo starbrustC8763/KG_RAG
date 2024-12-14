@@ -1,11 +1,8 @@
-# 文件名：faiss_query.py
 from neo4j import GraphDatabase
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss
 import os
-
-# 環境變數加載（如果需要）
 from dotenv import load_dotenv
 load_dotenv()
 
