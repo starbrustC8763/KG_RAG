@@ -13,7 +13,7 @@ password = os.getenv("NEO4J_PASSWORD")
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # 加載嵌入模型
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('shibing624/text2vec-base-chinese')
 
 # 提取節點文本並生成嵌入向量
 def add_embeddings_to_nodes():
