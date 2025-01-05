@@ -3,9 +3,10 @@ import re  # 用於正則表達式操作
 from langchain.chains import LLMChain  # 用於執行 LLM 鏈的核心模組
 from langchain.prompts import PromptTemplate  # 用於定義提示模板
 from langchain_ollama import OllamaLLM  # 用於調用 Ollama 模型的模組
+from typing import Dict, List  # 用於型別註解
 
 # 使用者輸入的範例數據
-user_data = """
+user_data: str = """
 一、事故發生緣由：
 被告於民國94年10月10日20時6分許，駕駛車牌號碼3191-XA號自小客車，沿台南縣山上鄉○○村○○○○○道路由東往西方向行駛，於行經明和村明和192之6號前時，原應注意汽車不得逆向行駛，且應注意車前狀況，並減速慢行，作好隨時準備煞車之安全措施，依當時天氣晴朗、路面平坦無缺陷、無障礙物、桅距良好等，並無不能注意之情事，竟仍疏未注意，逆向駛入對向車道，致其上開自小客車車頭與由乙○○所騎乘、後方搭載其妹丙○○，行駛於對向車道之UWL-1855號輕型機車發生對撞，致原告乙○○、丙○○人車倒地。
 
@@ -31,10 +32,9 @@ user_data = """
 """
 
 # 定義提示模板，用於生成法律參考判斷的指引
-prompt = PromptTemplate(
+prompt: PromptTemplate = PromptTemplate(
     input_variables=["case_facts", "injury_details", "compensation_request", "statutes_with_explanations"],
-    template="""
-你是一位專業的台灣律師，以下是案件的相關資料及可能需要引用的法條資訊，請根據這些資訊提供起訴書所需的法條引用。
+    template="""你是一位專業的台灣律師，以下是案件的相關資料及可能需要引用的法條資訊，請根據這些資訊提供起訴書所需的法條引用。
 ### 案件事實
 {case_facts}
 ### 受傷情形
@@ -42,8 +42,8 @@ prompt = PromptTemplate(
 ### 法條及口語化解釋
 {statutes_with_explanations}
 ### 任務
-對每一項條文內容與口語化解釋，判斷應引用的法條是否完整解釋案件需求，並輸出法條以及其條文
-你只需要照以下的格式輸出，不要自己增加其他內容
+對每一項條文內容與口語化解釋，判斷應引用的法條是否完整解釋案件需求，並輸出法條以及其條文。
+你只需要照以下的格式輸出，不要自己增加其他內容。
 ### 輸出格式
 - 引用法條：
   - 民法第xxx條
@@ -53,85 +53,71 @@ prompt = PromptTemplate(
 """
 )
 
-# 函數：將使用者輸入拆分為三個部分
-def split_input(user_input):
+def split_input(user_input: str) -> Dict[str, str]:
     """
-    使用正則表達式將使用者輸入的數據分割為三個部分：
-    1. 案件事實
-    2. 受傷情形
-    3. 賠償請求
+    使用正則表達式將使用者輸入分割為案件事實、受傷情形和賠償請求。
 
     Args:
-        user_input (str): 使用者提供的輸入數據。
+        user_input (str): 使用者輸入數據。
 
     Returns:
-        dict: 包含三個關鍵部分的字典。
+        Dict[str, str]: 包含 "case_facts", "injury_details", "compensation_request" 的字典。
     """
     sections = re.split(r"(一、|二、|三、)", user_input)
-    input_dict = {
+    return {
         "case_facts": sections[2].strip(),
         "injury_details": sections[4].strip(),
         "compensation_request": sections[6].strip()
     }
-    return input_dict
 
-# 函數：解析法條列表
-def parse_legal_references(legal_references: str) -> list[str]:
+def parse_legal_references(legal_references: str) -> List[str]:
     """
     將法條字符串解析為列表。
 
     Args:
-        legal_references (str): 包含多個法條的字符串，每行一個法條。
+        legal_references (str): 包含多個法條的字符串。
 
     Returns:
-        list[str]: 法條的列表。
+        List[str]: 法條的列表。
     """
     return legal_references.split("\n")
 
-# 函數：查詢法條及其口語化解釋
-def get_statutes_and_explanation(user_data):
+def get_statutes_and_explanation(user_data: str) -> List[Dict[str, str]]:
     """
-    從使用者提供的數據中提取相關的法條及口語化解釋。
+    根據使用者數據獲取相關法條和口語化解釋。
 
     Args:
-        user_data (str): 使用者提供的案件數據。
+        user_data (str): 使用者提供的案件資料。
 
     Returns:
-        list[dict]: 每個法條包含其 ID、條文及口語化解釋。
+        List[Dict[str, str]]: 包含法條 ID、條文和口語化解釋的列表。
     """
     input_data = split_input(user_data)
     legal_ref = get_legal(input_data["case_facts"], input_data["injury_details"])
     legal_list = parse_legal_references(legal_ref)
-    statutes_with_explanations = fetch_statutes_and_explanations(legal_list)
-    return statutes_with_explanations
+    return fetch_statutes_and_explanations(legal_list)
 
-# 函數：格式化法條及其口語化解釋
-def format_statutes_and_explanations(statutes_with_explanations):
+def format_statutes_and_explanations(statutes_with_explanations: List[Dict[str, str]]) -> str:
     """
-    將法條和口語化解釋轉換為格式化的字符串。
+    將法條和口語化解釋轉換為格式化字符串。
 
     Args:
-        statutes_with_explanations (list[dict]): 包含法條數據的列表。
+        statutes_with_explanations (List[Dict[str, str]]): 包含法條信息的列表。
 
     Returns:
         str: 格式化的字符串。
     """
-    formatted_output = []
-    for statute in statutes_with_explanations:
-        formatted_output.append(
-            f"法條: {statute['statute_id']}\n"
-            f"條文: {statute['statute_text']}\n"
-            f"口語化解釋: {statute['explanation_text']}\n"
-        )
-    return "\n".join(formatted_output)
+    return "\n".join(
+        f"法條: {statute['statute_id']}\n條文: {statute['statute_text']}\n口語化解釋: {statute['explanation_text']}"
+        for statute in statutes_with_explanations
+    )
 
-# 函數：生成法律引用建議
-def generate_legal_reference(user_data):
+def generate_legal_reference(user_data: str) -> str:
     """
-    對使用者輸入的案件數據生成建議引用的法律條文。
+    生成法律引用建議。
 
     Args:
-        user_data (str): 使用者提供的案件數據。
+        user_data (str): 使用者提供的案件資料。
 
     Returns:
         str: 包含建議法律引用的文本。
@@ -139,20 +125,22 @@ def generate_legal_reference(user_data):
     statutes_with_explanations = get_statutes_and_explanation(user_data)
     statutes_with_explanations_str = format_statutes_and_explanations(statutes_with_explanations)
     input_data = split_input(user_data)
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
-                    temperature=0.1,
-                    keep_alive=0,
-                    num_predict=len(user_data)+200
-                    )
-    # 創建 LLMChain
+
+    llm = OllamaLLM(
+        model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+        temperature=0.1,
+        keep_alive=0,
+        num_predict=len(user_data) + 200
+    )
+
     llm_chain = LLMChain(llm=llm, prompt=prompt)
-    legal_reference = llm_chain.run({
+    return llm_chain.run({
         "case_facts": input_data["case_facts"],
         "injury_details": input_data["injury_details"],
+        "compensation_request": input_data["compensation_request"],
         "statutes_with_explanations": statutes_with_explanations_str
     })
-    return legal_reference
 
-# 測試：生成法律引用建議
-#legal_reference = generate_legal_reference(user_data)
-#print(legal_reference)
+# 測試
+# legal_reference = generate_legal_reference(user_data)
+# print(legal_reference)
