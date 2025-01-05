@@ -1,22 +1,9 @@
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM
-from KG_Faiss_Query import query_faiss, get_statutes_for_case
+from KG_Faiss_Query import get_legal
 import re
-# 函數：生成引用的法條
-def generate_legal_references(case_facts, injury_details):
-    input_text = f"{case_facts} {injury_details}"
-    similar_facts = query_faiss(input_text, top_k=5)
-    statutes_set = set()
 
-    for fact in similar_facts:
-        fact_id = fact["id"]
-        statutes_info = get_statutes_for_case(fact_id)
-        for info in statutes_info:
-            statutes_set.update(info["statutes"])
-
-    legal_references = "\n".join(sorted(statutes_set))
-    return legal_references
 
 # 定義提示模板
 prompt_template = PromptTemplate(
@@ -93,7 +80,7 @@ def split_input(user_input):
 
 def generate_lawsuit(user_input):
     input_data=split_input(user_input)
-    legal_references = generate_legal_references(input_data["case_facts"], input_data["injury_details"])
+    legal_references = get_legal(input_data["case_facts"], input_data["injury_details"])
     input_data["legal_references"] = legal_references
     llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct",
                     temperature=0.1,

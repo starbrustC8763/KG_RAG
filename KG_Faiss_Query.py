@@ -80,3 +80,36 @@ def get_statutes_for_case(fact_id):
             fact_id=fact_id
         )
         return [{"case_id": record["case_id"], "statutes": record["statutes"]} for record in results]
+
+# 函數：查詢條文與口語化解釋
+def fetch_statutes_and_explanations(statutes):
+    query = """
+    MATCH (s:Statute)-[:口語化解釋]->(e:Explanation)
+    WHERE s.id IN $statutes
+    RETURN s.id AS statute_id, s.text AS statute_text, e.text AS explanation_text
+    """
+    with driver.session() as session:
+        results = session.run(query, statutes=statutes)
+        return [
+            {
+                "statute_id": record["statute_id"],
+                "statute_text": record["statute_text"],
+                "explanation_text": record["explanation_text"]
+            }
+            for record in results
+        ]
+
+# 函數：生成引用的法條
+def get_legal(case_facts, injury_details):
+    input_text = f"{case_facts} {injury_details}"
+    similar_facts = query_faiss(input_text, top_k=5)
+    statutes_set = set()
+
+    for fact in similar_facts:
+        fact_id = fact["id"]
+        statutes_info = get_statutes_for_case(fact_id)
+        for info in statutes_info:
+            statutes_set.update(info["statutes"])
+
+    legal_references = "\n".join(sorted(statutes_set))
+    return legal_references
