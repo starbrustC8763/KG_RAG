@@ -10,7 +10,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # 試算表 ID 和範圍
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 RANGE_READ = 'Sheet1!A:A'  # 讀取 A 欄
-RANGE_WRITE = 'Sheet1!C1'  # 從 C1 開始寫入
+RANGE_WRITE = 'Sheet1!C1'  # 從 B1 開始寫入
 
 # 初始化 Google Sheets 客戶端
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
