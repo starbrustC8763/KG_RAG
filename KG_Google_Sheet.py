@@ -1,4 +1,4 @@
-from KG_Generate import generate_lawsuit
+from KG_Generate_stable import generate_lawsuit
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 import os
