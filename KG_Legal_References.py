@@ -50,7 +50,6 @@ prompt = PromptTemplate(
     條文
   - 民法第xxx條
     條文
-- 總結：本案件中，建議引用上述法條進行起訴。
 """
 )
 

@@ -6,14 +6,14 @@ import re
 
 # 定義提示模板
 prompt_template = PromptTemplate(
-    input_variables=["case_facts", "injury_details", "compensation_request", "legal_references"],
+    input_variables=["case_facts", "legal_references", "injury_details", "compensation_request"],
     template="""
 你是一個台灣原告律師，你要撰寫一份車禍起訴狀，但你只需要根據下列格式進行輸出，並確保每個段落內容完整：
-（一）事實概述：完整描述事故經過，事件結果及要求賠償盡量越詳細越好
-（二）法律依據：先對每一條我給你的引用法條做判斷，如果確定在這起案件中要引用，列出所有相關法律條文，並對每一條文做出詳細解釋與應用。
-  模板：
-  - 民法第xxx條第x項：「...法律條文...」。
-    - 案件中的應用：本條適用於 [事實情節]，因為 [具體行為] 屬於 [法條描述的範疇]，因此 [解釋為何負責賠償]。
+（一）事實概述：完整描述事故經過，事件結果盡量越詳細越好，要使用"緣被告"做開頭，並且在這段中都要以"原告""被告"作人物代稱
+法律依據：按照我給你的條列式的法條資訊，轉化為以下模板的格式做輸出:
+  模板:按「民法第A條條文」、「民法第B條條文」、...、「民法第N條條文」民法第A條、民法第B條、...、民法第N條分別定有明文。查被告因上開侵權行為，致原告受有下列損害，依前揭規定，被告應負損害賠償責任：
+  以下是使用此模板的範例，其中引用的法條僅供參考，輸出的時候要以我給你的法條為準，絕對不要照抄範例:
+  按「因故意或過失，不法侵害他人之權利者，負損害賠償責任。」、「汽車、機車或其他非依軌道行駛之動力車輛，在使用中加損害於他人者，駕駛人應賠償因此所生之損害。但於防止損害之發生，已盡相當之注意者，不在此限。」、「不法侵害他人之身體或健康者，對於被害人因此喪失或減少勞動能力或增加生活上之需要時，應負損害賠償責任。」、「不法侵害他人之身體、健康、名譽、自由、信用、隱私、貞操，或不法侵害其他人格法益而情節重大者，被害人雖非財產上之損害，亦得請求賠償相當之金額。」民法第184條第1項前段、第191條之2、第193條第1項、第195條第1項前段分別定有明文。查被告因上開侵權行為，致原告受有下列損害，依前揭規定，被告應負損害賠償責任：
 （三）損害項目：列出所有損害項目的金額，並說明對應事實。
   模板：
     損害項目名稱： [損害項目描述]
@@ -27,10 +27,10 @@ prompt_template = PromptTemplate(
     依據 [法律條文] 規定，本案中 [被告行為] 對原告造成 [描述損害]，被告應負賠償責任。總賠償金額為 [總金額] 元。
 ### 案件事實：
 {case_facts}
-### 受傷情形：
-{injury_details}
 ### 引用法條：
 {legal_references}
+### 受傷情形：
+{injury_details}
 ### 賠償請求：
 {compensation_request}
 """
@@ -73,7 +73,7 @@ def generate_lawsuit(user_input):
     input_data=split_input(user_input)
     legal_references = generate_legal_reference(user_input)
     input_data["legal_references"] = legal_references
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:70b-instruct-dpo-q3_K_S",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
                     temperature=0.1,
                     keep_alive=0,
                     num_predict=5000
@@ -89,4 +89,4 @@ def generate_lawsuit(user_input):
     })
     print(lawsuit_draft)
     return lawsuit_draft
-#generate_lawsuit(user_input)
+generate_lawsuit(user_input)
