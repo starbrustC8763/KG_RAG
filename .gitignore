@@ -1,1 +1,6 @@
 .env
+kg-ntpu-dd0483f97d9b.json
+test.py
+fact_index_hnsw.faiss
+fact_metadata_hnsw.npy
+__pycache__

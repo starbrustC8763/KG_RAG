@@ -7,13 +7,27 @@ from langchain_ollama import OllamaLLM  # 用於調用 Ollama 模型的模組
 # 使用者輸入的範例數據
 user_data = """
 一、事故發生緣由：
-被告乙○○於民國96年12月5日18時35分許，騎乘車牌號碼：922-BER號機車，自臺北市○○路由東往西行駛，途經青年新城前時，適原告正在穿越青年路行走，被告乙○○本應注意車前狀況及依規定暫停讓行人先行通過，然而當時天候陰、夜間有照明、柏油路面乾燥無缺陷、無障礙物、視距良好的情況下，被告乙○○竟疏未注意撞及原告，致原告倒地受傷。又事故發生時被告乙○○未滿20歲，被告丙○○為其法定代理人，依法應連帶負賠償之責。
+被告於民國94年10月10日20時6分許，駕駛車牌號碼3191-XA號自小客車，沿台南縣山上鄉○○村○○○○○道路由東往西方向行駛，於行經明和村明和192之6號前時，原應注意汽車不得逆向行駛，且應注意車前狀況，並減速慢行，作好隨時準備煞車之安全措施，依當時天氣晴朗、路面平坦無缺陷、無障礙物、桅距良好等，並無不能注意之情事，竟仍疏未注意，逆向駛入對向車道，致其上開自小客車車頭與由乙○○所騎乘、後方搭載其妹丙○○，行駛於對向車道之UWL-1855號輕型機車發生對撞，致原告乙○○、丙○○人車倒地。
 
 二、原告受傷情形：
-原告因本次車禍事故受有頸椎管狹窄併脊髓損傷之傷害，導致下肢乏力、經常跌倒及行動不便，需要持續復健治療，至今仍步態不穩蹣跚，行動能力明顯受到障礙。
+原告乙○○因而受有頭部挫傷合併顏面多處擦傷及牙齒斷裂、下腹部挫傷合併恥骨之兩側下分枝斷裂（骨折）、右側卵巢巧克力囊腫破裂致腹膜炎等傷害，丙○○因而受有顱腦損傷、顱內出血、顏面骨骨折等傷害。
 
 三、請求賠償的事實根據：
-原告於96年12月5日至97年1月11日在臺北市立聯合醫院住院支出醫療費用新臺幣8,406元，於97年1月14日至98年11月30日至該院接受物理治療自付費用3,966元，合計12,372元，有該院住院醫療費用證明書及門診醫療費用明細表可以證明。
+（一）丙○○部分：
+1. 醫藥費用：共新台幣38,706元。
+
+2. 不能工作之損失：原告因傷至少2個月不能工作，以92年、93年度扣繳憑單給付總額之平均數1個月34,860元計算，共損失69,728元。
+
+3. 精神慰撫金：原告因被告之侵權行為導致顱內出血及顏面骨折，有頭疼、頭暈且記憶力減退之後遺症等現象，均影響生活、工作及女生外貌甚鉅，導致原告精神痛苦不堪，為此爰請求精神賠償300,000元。
+
+（二）乙○○部分:
+1. 醫藥費用：共274,874元。
+
+2. 不能工作之損失：原告因傷無法工作期間達6個月以上，以其92年度綜合所得稅各類所得資料可知其每月工作所得為30,157元，以6個月計，則損失約180,942元。
+
+3. 精神慰撫金：原告因被告之侵權行為而導致下腹部挫傷合併恥骨骨折、卵巢破裂合併內出血等傷害，已切除卵巢百分之50且可能導致終生不孕。而生育對多數女性而言乃視為極為重要之天職，若無法生孕，甚至可能造成婚姻之不幸福及家庭之缺憾，因而使原告極其痛苦，爰請求精神慰撫金2,000,000元。
+
+4. 原告乙○○大學畢業，現在豐年豐和企業股份有限公司上班，月薪約30,000元左右，名下無不動產；原告丙○○為二專畢業，受傷之前的月薪約34,000元左右，名下有汽車1輛，無不動產。
 """
 
 # 定義提示模板，用於生成法律參考判斷的指引
@@ -25,18 +39,17 @@ prompt = PromptTemplate(
 {case_facts}
 ### 受傷情形
 {injury_details}
-### 賠償請求
-{compensation_request}
 ### 法條及口語化解釋
 {statutes_with_explanations}
 ### 任務
-對每一項條文內容與口語化解釋，判斷應引用的法條是否完整解釋案件需求，判斷不需引用的法條也要解釋為什麼不需引用
+對每一項條文內容與口語化解釋，判斷應引用的法條是否完整解釋案件需求，並輸出法條以及其條文
+你只需要照以下的格式輸出，不要自己增加其他內容
 ### 輸出格式
 - 引用法條：
   - 民法第xxx條
-    判斷是否要引用:
+    條文
   - 民法第xxx條
-    判斷是否要引用:
+    條文
 - 總結：本案件中，建議引用上述法條進行起訴。
 """
 )
@@ -127,7 +140,7 @@ def generate_legal_reference(user_data):
     statutes_with_explanations = get_statutes_and_explanation(user_data)
     statutes_with_explanations_str = format_statutes_and_explanations(statutes_with_explanations)
     input_data = split_input(user_data)
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo-q6_K",
+    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
                     temperature=0.1,
                     keep_alive=0,
                     num_predict=len(user_data)+200
@@ -137,11 +150,10 @@ def generate_legal_reference(user_data):
     legal_reference = llm_chain.run({
         "case_facts": input_data["case_facts"],
         "injury_details": input_data["injury_details"],
-        "compensation_request": input_data["compensation_request"],
         "statutes_with_explanations": statutes_with_explanations_str
     })
     return legal_reference
 
 # 測試：生成法律引用建議
-legal_reference = generate_legal_reference(user_data)
-print(legal_reference)
+#legal_reference = generate_legal_reference(user_data)
+#print(legal_reference)
