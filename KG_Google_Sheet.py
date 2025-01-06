@@ -8,9 +8,9 @@ load_dotenv()
 SERVICE_ACCOUNT_FILE = os.getenv("PATH_TO_GOOGLE_JSON")
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # 試算表 ID 和範圍
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID_2")
 RANGE_READ = 'Sheet1!A:A'  # 讀取 A 欄
-RANGE_WRITE = 'Sheet1!C1'  # 從 B1 開始寫入
+RANGE_WRITE = 'Sheet1!B1'  # 從 B1 開始寫入
 
 # 初始化 Google Sheets 客戶端
 creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -40,7 +40,7 @@ def read_and_write_sheets():
             lawsuit_draft = "生成失敗"
 
         # 寫入到 B 欄
-        write_range = f"Sheet1!C{i}"
+        write_range = f"Sheet1!B{i}"
         sheet.values().update(
             spreadsheetId=SPREADSHEET_ID,
             range=write_range,

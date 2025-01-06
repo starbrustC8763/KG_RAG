@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "kg"
+version = "0.1.0"
+description = ""
+authors = ["Eric eric.es.shen@gmail.com"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+langchain = "^0.3.13"
+faiss-cpu = "^1.9.0.post1"
+langchain-ollama = "^0.2.2"
+langchain-core = "^0.3.29"
+sentence-transformers = "^3.3.1"
+neo4j = "^5.27.0"
+numpy = "^2.2.1"
+python-dotenv = "^1.0.1"
+google-api-python-client = "^2.157.0"
+google-auth = "^2.37.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
