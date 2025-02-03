@@ -98,7 +98,7 @@ def generate_fact_and_legal(user_input):
     input_data=split_input(user_input)
     legal_references = generate_legal_reference(user_input)
     input_data["legal_references"] = legal_references
-    llm = OllamaLLM(model="kenneth85/llama-3-taiwan:8b-instruct-dpo",
+    llm = OllamaLLM(model="deepseek-r1:32b",
                     temperature=0.1,
                     keep_alive=0,
                     )
